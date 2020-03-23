@@ -1,0 +1,183 @@
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len words to dst.
+# Return the number of positive words (>0) contained in src.
+#
+# Furkan TAŞBAŞI / 2041853
+#
+# I used LoopEnrolling up to 5 case here. First i checked the len of words whether it >=5 or not,
+# if it's so i sent it to Loop5 if not i sent it to CheckLess5 case that checks whether the len is
+# <5 or not. I added 1 to all comparisons to check if len is exactly 5,4,3,2 or 1 whenever I found
+# an exact Case I send it to exact location. In summary, when program runs, it  makes the len to 
+# pieces into mod 5 and then it continues up to 1 case. Moreover, I used without XORQ rax but I 
+# added it in case of any irrelevant problem.
+#
+##################################################################
+# Do not modify this portion
+# Function prologue.
+# %rdi = src, %rsi = dst, %rdx = len
+ncopy:
+
+##################################################################
+# You can modify this portion
+	# Loop header
+	xorq %rax, %rax            # set ret=0
+	andq %rdx,%rdx             # set len=0
+    jg NotFinished		       # if len is >=0
+    jle Finished   
+    
+NotFinished:                   # Start of LoopEnrolling 5
+    iaddq $-5, %rdx
+    jge Loop5                  # If incoming count >= 5 jump to Loop5
+
+CheckLess5:                    
+	iaddq $1, %rdx
+	je Loop4                   # If incoming count >= 4 jump to Loop4
+
+CheckLess4:
+	iaddq $1, %rdx
+	je Loop3                   # If incoming count >= 3 jump to Loop3
+
+CheckLess3:
+	iaddq $1, %rdx
+	je Loop2                   # If incoming count >= 2 jump to Loop2
+	jmp CheckLess2             # Else count is less than 2 jump to CheckLess2
+
+CheckLess2:
+	iaddq $1, %rdx
+	je Loop1                   # If incoming count = 1 jump to Loop1
+	jmp Finished
+
+Loop1: 
+    mrmovq (%rdi), %rcx        # get source value from rdi
+
+
+
+    rmmovq %rcx, (%rsi)        # put source to destination rsi
+
+
+
+    andq %rcx, %rcx     
+    jle CASE1a                 # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax             # if >0 increment the count
+CASE1a:
+    iaddq $8, %rdi             # src++
+    iaddq $8, %rsi             # dst++
+    andq %rdx,%rdx      
+    jle Finished               # if val is not greater than 0 ,Finished
+    iaddq $1, %rax             # if >0 increment the count
+    ret
+
+
+Loop2: 
+    mrmovq (%rdi), %rcx        # get source value from rdi 1
+    mrmovq 8(%rdi), %r8        # get source value from rdi 2
+
+
+    rmmovq %rcx, (%rsi)        # put source to destination rsi 1
+    rmmovq %r8, 8(%rsi)	       # put source to destination rsi 2
+
+
+    andq %rcx, %rcx     
+    jle CASE2a                 # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax             # if >0 increment the count
+CASE2a:
+    andq %r8, %r8
+    jle Finished               # if val is not greater than 0 ,Finished
+    iaddq $1, %rax             # if >0 increment the count
+	ret
+Loop3: 
+    mrmovq (%rdi), %rcx        # get source value from rdi 1
+    mrmovq 8(%rdi), %r8        # get source value from rdi 2
+    mrmovq 16(%rdi), %r9       # get source value from rdi 3
+
+
+    rmmovq %rcx, (%rsi)        # put source to destination rsi 1
+    rmmovq %r8, 8(%rsi)	       # put source to destination rsi 2
+    rmmovq %r9, 16(%rsi)       # put source to destination rsi 3
+
+
+    andq %rcx, %rcx     
+    jle CASE3a                  # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax              # if >0 increment the count
+CASE3a:
+    andq %r8, %r8
+    jle CASE3b                  # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax              # if >0 increment the count
+CASE3b:
+    andq %r9, %r9
+    jle Finished                # if val is not greater than 0 ,Finished
+    iaddq $1, %rax              # if >0 increment the count
+	ret
+Loop4: 
+    mrmovq (%rdi), %rcx         # get source value from rdi 1
+    mrmovq 8(%rdi), %r8         # get source value from rdi 2 
+    mrmovq 16(%rdi), %r9        # get source value from rdi 3
+    mrmovq 24(%rdi), %r10       # get source value from rdi 4
+
+    rmmovq %rcx, (%rsi)         # put source to destination rsi 1
+    rmmovq %r8, 8(%rsi)	        # put source to destination rsi 2
+    rmmovq %r9, 16(%rsi)        # put source to destination rsi 3
+    rmmovq %r10, 24(%rsi)       # put source to destination rsi 4
+
+    andq %rcx, %rcx     
+    jle CASE4a                  # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax              # if >0 increment the count
+CASE4a:
+    andq %r8, %r8
+    jle CASE4b                  # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax              # if >0 increment the count
+CASE4b:
+    andq %r9, %r9
+    jle CASE4c                  # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax              # if >0 increment the count
+CASE4c:
+    andq %r10, %r10
+    jle Finished                # if val is not greater than 0 ,Finished
+    iaddq $1, %rax              # if >0 increment the count
+	ret
+Loop5: 
+    mrmovq (%rdi), %rcx         # get source value from rdi 1
+    mrmovq 8(%rdi), %r8         # get source value from rdi 2
+    mrmovq 16(%rdi), %r9        # get source value from rdi 3
+    mrmovq 24(%rdi), %r10       # get source value from rdi 4
+    mrmovq 32(%rdi), %r11       # get source value from rdi 5
+    rmmovq %rcx, (%rsi)         # put source to destination rsi 1
+    rmmovq %r8, 8(%rsi)	        # put source to destination rsi 2
+    rmmovq %r9, 16(%rsi)        # put source to destination rsi 3
+    rmmovq %r10, 24(%rsi)       # put source to destination rsi 4
+    rmmovq %r11, 32(%rsi)       # put source to destination rsi 5
+    andq %rcx, %rcx     
+    jle CASE5a                  # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax              # if >0 increment the count
+CASE5a:
+    andq %r8, %r8
+    jle CASE5b                  # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax              # if >0 increment the count
+CASE5b:
+    andq %r9, %r9
+    jle CASE5c                  # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax              # if >0 increment the count
+CASE5c:
+    andq %r10, %r10
+    jle CASE5d                  # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax              # if >0 increment the count
+CASE5d:
+    andq %r11, %r11
+    jle CASE5e                  # if val is not greater than 0 ,move to CASE
+    iaddq $1, %rax              # if >0 increment the count
+CASE5e:
+    iaddq $40, %rdi             # src++
+    iaddq $40, %rsi             # dst++
+    andq %rdx,%rdx      
+    jg NotFinished		        # if len is >=0
+
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Finished:
+	ret
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */

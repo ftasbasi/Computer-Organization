@@ -1,0 +1,51 @@
+##################################################################
+#	Furkan TAŞBAŞI / 2041853
+#
+#
+#
+##################################################################
+# Execution begins at address 0
+	.pos 0
+	irmovq 	stack, %rsp  		# Set up stack pointer
+	call 	main					# Execute main program
+	halt						# Terminate program
+
+  # Sample linked list
+  .align 8
+    ele1:
+
+    .quad 0x00a
+    .quad ele2
+    ele2:
+    .quad 0x0b0
+    .quad ele3
+    ele3:
+    .quad 0xc00
+    .quad 0
+
+main:		
+	irmovq 	ele1,%rdi
+  	call 	rsum						# sum(head)
+	ret
+
+# $begin rsum-ys
+# long rsum(long *start)
+# start in %rdi
+rsum:
+	xorq 	%rax,%rax				# Set return as 0
+  	andq 	%rdi, %rdi
+	je     	return					# If no element we have, return 0
+	pushq 	%rbx					# Callee-saved registers are saved
+	mrmovq 	(%rdi),%rbx				# Get starting point of linked list
+	irmovq 	$8,%r11        			# constant 8 for incr 
+	addq 	%r11,%rdi          		# start++
+  	mrmovq 	(%rdi), %rdi
+	call 	rsum
+	addq 	%rbx,%rax          		# Add value of the pointer into sum
+	popq 	%rbx					# Callee-saved registers are restored
+return:
+	ret
+
+# The stack starts here and grows to lower addresses
+	.pos 0x200
+stack:

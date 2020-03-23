@@ -1,0 +1,51 @@
+##################################################################
+#Furkan TAŞBAŞI / 2041853
+#
+#
+##################################################################
+# Do not modify this portion
+# Function prologue.
+# %rdi = src, %rsi = dst, %rdx = len
+# Execution begins at address 0
+	.pos 0
+	irmovq stack, %rsp  	# Set up stack pointer
+	call main				# Execute main program
+	halt					# Terminate program
+
+  # Sample linked list
+  .align 8
+  ele1:
+  .quad 0x00a
+  .quad ele2
+  ele2:
+  .quad 0x0b0
+  .quad ele3
+  ele3:
+  .quad 0xc00
+  .quad 0
+
+main:	
+	irmovq ele1,%rdi		# take linked list into the rdi register as a source
+	call sum		
+	ret
+
+sum:
+  	rrmovq  %rdi, %rcx
+  	irmovq  $8, %r11       	# Constant 8
+	xorq    %rax,%rax	 	# sum = 0
+	andq 	%rcx,%rcx	    # Set CC
+	jmp     ifNULL         	# Goto ifNULL case
+
+LOOP:	
+	mrmovq 	(%rcx),%r10   	# Get value of the pointer
+	addq 	%r10,%rax       # Add to sum
+	addq 	%r11,%rcx       # start++
+  	mrmovq 	(%rcx), %rcx
+  	andq 	%rcx,%rcx	    # Set CC
+ifNULL:	
+	jne    	LOOP          	# Stop whenever pointer is NULL
+	ret                  	# Return
+
+# Stack starts here
+	.pos 0x200
+stack:
